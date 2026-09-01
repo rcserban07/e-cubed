@@ -1,0 +1,71 @@
+{% extends "app_base.html" %}
+{% block title %}Set Up 2FA{% endblock %}
+
+{% block page_content %}
+<div class="px-4 lg:px-8 py-6 lg:py-8 max-w-lg space-y-6">
+
+    {# Back #}
+    <a href="{{ url_for('settings_2fa') }}" class="inline-flex items-center gap-2 text-sm text-panel-400 hover:text-panel-300 transition-colors">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+        </svg>
+        Back to 2FA Settings
+    </a>
+
+    {# Header #}
+    <div>
+        <h1 class="text-2xl font-bold text-panel-50">Set Up Authenticator</h1>
+        <p class="text-sm text-panel-400 mt-1">Scan the QR code below with your authenticator app.</p>
+    </div>
+
+    {# QR Code #}
+    <div class="rounded-md border border-panel-800 bg-panel-900/50 p-6 space-y-4">
+        <div class="flex justify-center">
+            <div class="bg-panel-50 p-3 rounded-md">
+                <img src="data:image/png;base64,{{ qr_b64 }}" alt="TOTP QR Code" class="w-48 h-48">
+            </div>
+        </div>
+
+        {# Manual entry #}
+        <div class="space-y-1.5">
+            <p class="text-xs font-mono text-panel-400 text-center">Can't scan? Enter this key manually:</p>
+            <div class="flex items-center justify-center gap-2">
+                <code class="readout px-3 py-2 rounded-md bg-panel-850 border border-panel-700 text-signal-400 text-sm tracking-wider select-all">
+                    {{ secret }}
+                </code>
+            </div>
+        </div>
+    </div>
+
+    {# Verification form #}
+    <form method="POST" class="space-y-4">
+        {{ form.hidden_tag() }}
+
+        <div class="space-y-1.5">
+            <label for="token" class="silk block text-panel-100">
+                Enter the 6-digit code from your app
+            </label>
+            {{ form.token(
+                class="readout w-full px-4 py-4 rounded-md bg-panel-900 border border-panel-700
+                       text-panel-50 text-center text-2xl tracking-[0.5em] placeholder-panel-400
+                       focus:outline-none focus:border-signal-600/60 focus:ring-1 focus:ring-signal-600/30
+                       transition-colors",
+                placeholder="000000",
+                autocomplete="one-time-code",
+                inputmode="numeric",
+                maxlength="6",
+                autofocus=True
+            ) }}
+            {% for error in form.token.errors %}
+            <p class="text-xs text-denied-400">{{ error }}</p>
+            {% endfor %}
+        </div>
+
+        <button type="submit"
+                class="w-full py-3.5 rounded-md bg-signal-600 text-panel-950 font-semibold text-sm
+                       hover:bg-signal-500 transition-colors switch-control">
+            Verify &amp; Enable 2FA
+        </button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Welcome{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-grid flex flex-col">
+
+    {# ── Status strip: the console's top diagnostic row ── #}
+    <div class="border-b border-panel-800 bg-panel-900/60">
+        <div class="max-w-3xl mx-auto px-6 py-3 flex flex-wrap items-center justify-center gap-x-8 gap-y-2">
+            <div class="sweep flex items-center gap-2 px-2 -mx-2 rounded opacity-0 animate-[power-on_0.5s_cubic-bezier(0.2,0.8,0.2,1)_0.1s_forwards]">
+                <span class="led w-1.5 h-1.5 is-on text-granted-400"></span>
+                <span class="silk text-panel-100">System<span class="text-panel-400">·</span><span class="text-granted-400">Online</span></span>
+            </div>
+            <div class="flex items-center gap-2 opacity-0 animate-[power-on_0.5s_cubic-bezier(0.2,0.8,0.2,1)_0.2s_forwards]">
+                <span class="silk text-panel-100">Build</span>
+                <span class="readout text-xs text-panel-300">v2.0</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-0 animate-[power-on_0.5s_cubic-bezier(0.2,0.8,0.2,1)_0.3s_forwards]">
+                <span class="silk text-panel-100">Auth</span>
+                <span class="readout text-xs text-panel-300">TOTP + RBAC</span>
+            </div>
+        </div>
+    </div>
+
+    {# ── Console face ── #}
+    <div class="flex-1 flex items-center justify-center px-6 py-12">
+        <div class="w-full max-w-2xl">
+
+            <div class="relative rounded-lg border border-panel-800 bg-panel-900/70 shadow-panel
+                        opacity-0 animate-[power-on_0.6s_cubic-bezier(0.2,0.8,0.2,1)_0.35s_forwards]">
+
+                {# Corner rivets — the panel's own hardware #}
+                <span class="rivet absolute top-3 left-3 w-1.5 h-1.5 rounded-full"></span>
+                <span class="rivet absolute top-3 right-3 w-1.5 h-1.5 rounded-full"></span>
+                <span class="rivet absolute bottom-3 left-3 w-1.5 h-1.5 rounded-full"></span>
+                <span class="rivet absolute bottom-3 right-3 w-1.5 h-1.5 rounded-full"></span>
+
+                <div class="px-8 py-10 sm:px-10 sm:py-12">
+                    {# Nameplate #}
+                    <div class="text-center space-y-1 mb-8">
+                        <div class="inline-flex items-center gap-2.5 mb-3">
+                            <div class="w-8 h-8 rounded-md bg-panel-850 border border-panel-700 flex items-center justify-center">
+                                <svg class="w-4 h-4 text-signal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6
+                                             11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623
+                                             5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152
+                                             c-3.196 0-6.1-1.248-8.25-3.285z"/>
+                                </svg>
+                            </div>
+                            <h1 class="text-xl font-bold text-panel-50 tracking-wide">E-CUBED</h1>
+                        </div>
+                        <p class="silk text-panel-100">Enterprise Access Control</p>
+                    </div>
+
+                    {# Positioning line #}
+                    <p class="text-sm text-panel-400 text-center leading-relaxed mb-8 max-w-sm mx-auto">
+                        Role-based authentication, live access logging, and
+                        device-location monitoring for security-conscious teams.
+                    </p>
+
+                    {# The control: styled as a panel switch, not a rounded pill #}
+                    <a href="{{ url_for('login') }}"
+                       class="group relative flex items-center justify-between w-full max-w-sm mx-auto px-5 py-4 rounded-md
+                              bg-signal-600 hover:bg-signal-500 transition-colors switch-control">
+                        <span class="text-sm font-semibold text-panel-950 tracking-wide">AUTHENTICATE</span>
+                        <span class="flex items-center gap-2">
+                            <span class="led w-2 h-2 is-on text-panel-950/70"></span>
+                            <svg class="w-4 h-4 text-panel-950 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                        </span>
+                    </a>
+                </div>
+
+                {# ── Capability bank: real system functions, lit like panel switches ── #}
+                <div class="border-t border-panel-800 px-8 py-6 sm:px-10">
+                    <p class="silk text-panel-500 text-center mb-4">System Capabilities</p>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        {% set capabilities = [
+                            ("Access Control", "RBAC"),
+                            ("Two-Factor Auth", "TOTP"),
+                            ("Audit Trail", "LOGGED"),
+                            ("Live Tracking", "GPS"),
+                        ] %}
+                        {% for label, code in capabilities %}
+                        <div class="flex items-center gap-2.5 px-3 py-2.5 rounded-md border border-panel-800 bg-panel-850/60
+                                    opacity-0 animate-[power-on_0.5s_cubic-bezier(0.2,0.8,0.2,1)_{{ 0.5 + loop.index0 * 0.08 }}s_forwards]">
+                            <span class="led w-1.5 h-1.5 is-on text-granted-400 flex-shrink-0"></span>
+                            <div class="min-w-0">
+                                <p class="text-xs text-panel-300 truncate">{{ label }}</p>
+                                <p class="silk text-panel-600">{{ code }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    {# Footer #}
+    <footer class="py-6 text-center">
+        <p class="silk text-panel-700">
+            &copy; {{ now().year if now is defined else "2026" }} E-Cubed Security Systems
+        </p>
+    </footer>
+</div>
+{% endblock %}

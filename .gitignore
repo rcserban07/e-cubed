@@ -1,0 +1,21 @@
+# Environment & secrets
+.env
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Database
+instance/
+*.db
+
+# Test artifacts
+.pytest_cache/
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

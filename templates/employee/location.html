@@ -1,0 +1,214 @@
+{% extends "app_base.html" %}
+{% block title %}My Location{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<style>
+    #map {
+        height: calc(100vh - 360px);
+        min-height: 250px;
+        border-radius: 6px;
+        border: 1px solid #2b2724;
+        position: relative;
+        z-index: 0;
+    }
+    .leaflet-pane { z-index: 1 !important; }
+    .leaflet-control { z-index: 2 !important; }
+    .leaflet-container { background: #141312; }
+    /* Free OSM tiles have no dark variant — filter them to match the panel */
+    .panel-tiles {
+        filter: grayscale(1) brightness(0.42) sepia(0.35) contrast(1.15);
+    }
+    .leaflet-popup-content-wrapper {
+        background: #221f1d; color: #ece7e1; border-radius: 6px;
+        border: 1px solid #3d3733;
+        box-shadow: 0 12px 32px -12px rgba(0,0,0,0.55);
+    }
+    .leaflet-popup-tip { background: #221f1d; }
+    .leaflet-popup-content { margin: 12px 16px; font-family: 'Public Sans', sans-serif; }
+    .leaflet-control-zoom a {
+        background: #221f1d !important; color: #b8ada3 !important; border-color: #3d3733 !important;
+    }
+    .leaflet-control-zoom a:hover { background: #2b2724 !important; color: #fff !important; }
+    .leaflet-control-attribution {
+        background: rgba(20, 19, 18, 0.8) !important;
+        color: #948a81 !important;
+    }
+    .leaflet-control-attribution a { color: #d6cec6 !important; }
+
+    .marker-pulse {
+        width: 14px; height: 14px;
+        background: #4ade80;
+        border-radius: 2px;
+        border: 2px solid #141312;
+        box-shadow: 0 0 0 0 rgba(74,222,128,0.4);
+        animation: marker-ping 2s ease-out infinite;
+    }
+    @keyframes marker-ping {
+        0% { box-shadow: 0 0 0 0 rgba(74,222,128,0.4); }
+        70% { box-shadow: 0 0 0 14px rgba(74,222,128,0); }
+        100% { box-shadow: 0 0 0 0 rgba(74,222,128,0); }
+    }
+</style>
+{% endblock %}
+
+{% block page_content %}
+<div class="px-4 lg:px-8 py-6 lg:py-8 space-y-6">
+
+    {# Header #}
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-panel-50">My Location</h1>
+            <p class="text-sm text-panel-400 mt-1">Share your device location with the system.</p>
+        </div>
+        <button id="share-btn" onclick="shareLocation()"
+                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-md bg-signal-600
+                       text-panel-950 text-sm font-semibold hover:bg-signal-500
+                       transition-colors switch-control disabled:opacity-50 disabled:cursor-not-allowed">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/>
+            </svg>
+            <span id="share-text">Share My Location</span>
+        </button>
+    </div>
+
+    {# Status card #}
+    <div id="status-card" class="rounded-md border border-panel-800 bg-panel-900/50 p-5">
+        <div class="flex items-center gap-4">
+            <div id="status-icon" class="w-10 h-10 rounded-md flex items-center justify-center
+                {% if marker %}bg-granted-500/10 text-granted-400{% else %}bg-panel-800 text-panel-400{% endif %}">
+                {% if marker %}
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                {% else %}
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+                </svg>
+                {% endif %}
+            </div>
+            <div>
+                <p id="status-title" class="text-sm font-medium {% if marker %}text-granted-400{% else %}text-panel-400{% endif %}">
+                    {% if marker %}Location on file{% else %}No location shared yet{% endif %}
+                </p>
+                <p id="status-detail" class="readout text-xs text-panel-400 mt-0.5">
+                    {% if marker %}
+                        {{ marker.lat }}, {{ marker.lon }}
+                        {% if marker.accuracy %} · ±{{ marker.accuracy | round(0) | int }}m{% endif %}
+                        · Last updated {{ marker.timestamp }}
+                    {% else %}
+                        Click "Share My Location" to send your device position.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    {# Map #}
+    <div id="map"></div>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+    const map = L.map('map', { zoomControl: true }).setView([45.42, -75.69], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors',
+        className: 'panel-tiles',
+    }).addTo(map);
+
+    const icon = L.divIcon({
+        className: '',
+        html: '<div class="marker-pulse"></div>',
+        iconSize: [18, 18],
+        iconAnchor: [9, 9],
+        popupAnchor: [0, -14],
+    });
+
+    let myMarker = null;
+
+    {% if marker %}
+    myMarker = L.marker([{{ marker.lat }}, {{ marker.lon }}], { icon })
+        .addTo(map)
+        .bindPopup('<div style="font-size:13px;"><strong style="color:#4ade80;">Your Location</strong><br><span style="color:#948a81;font-size:12px;">{{ marker.lat }}, {{ marker.lon }}</span></div>');
+    map.setView([{{ marker.lat }}, {{ marker.lon }}], 15);
+    {% endif %}
+
+    function updateStatus(lat, lon, accuracy) {
+        const det = `${lat.toFixed(5)}, ${lon.toFixed(5)}` +
+            (accuracy ? ` · ±${accuracy.toFixed(0)}m` : '') +
+            ` · Just now`;
+
+        document.getElementById('status-title').textContent = 'Location on file';
+        document.getElementById('status-title').className = 'text-sm font-medium text-granted-400';
+        document.getElementById('status-detail').textContent = det;
+        document.getElementById('status-icon').className =
+            'w-10 h-10 rounded-md flex items-center justify-center bg-granted-500/10 text-granted-400';
+        document.getElementById('status-icon').innerHTML =
+            '<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
+    }
+
+    async function shareLocation() {
+        const btn = document.getElementById('share-btn');
+        const txt = document.getElementById('share-text');
+
+        if (!navigator.geolocation) {
+            alert('Geolocation is not supported by your browser.');
+            return;
+        }
+
+        btn.disabled = true;
+        txt.textContent = 'Getting position...';
+
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+            const { latitude, longitude, accuracy } = pos.coords;
+            txt.textContent = 'Sending...';
+
+            try {
+                const res = await fetch('/api/location', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ latitude, longitude, accuracy }),
+                });
+
+                if (res.ok) {
+                    if (myMarker) { map.removeLayer(myMarker); }
+                    myMarker = L.marker([latitude, longitude], { icon })
+                        .addTo(map)
+                        .bindPopup(`<div style="font-size:13px;"><strong style="color:#4ade80;">Your Location</strong><br><span style="color:#948a81;font-size:12px;">${latitude.toFixed(5)}, ${longitude.toFixed(5)}</span></div>`)
+                        .openPopup();
+                    map.setView([latitude, longitude], 16);
+                    updateStatus(latitude, longitude, accuracy);
+                    txt.textContent = 'Location shared!';
+                    setTimeout(() => { txt.textContent = 'Share My Location'; btn.disabled = false; }, 2000);
+                } else {
+                    txt.textContent = 'Failed to send';
+                    setTimeout(() => { txt.textContent = 'Share My Location'; btn.disabled = false; }, 2000);
+                }
+            } catch (e) {
+                console.error(e);
+                txt.textContent = 'Network error';
+                setTimeout(() => { txt.textContent = 'Share My Location'; btn.disabled = false; }, 2000);
+            }
+        }, (err) => {
+            console.error(err);
+            let msg = 'Location access denied';
+            if (err.code === 2) msg = 'Position unavailable';
+            if (err.code === 3) msg = 'Request timed out';
+            txt.textContent = msg;
+            setTimeout(() => { txt.textContent = 'Share My Location'; btn.disabled = false; }, 3000);
+        }, {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0,
+        });
+    }
+</script>
+{% endblock %}

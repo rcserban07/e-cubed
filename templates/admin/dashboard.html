@@ -1,0 +1,100 @@
+{% extends "app_base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block page_content %}
+<div class="px-4 lg:px-8 py-6 lg:py-8 space-y-8">
+
+    {# Header #}
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-panel-50">Command Center</h1>
+            <p class="text-sm text-panel-400 mt-1">System overview and recent activity.</p>
+        </div>
+        <a href="{{ url_for('admin_register_user') }}"
+           class="inline-flex items-center gap-2 px-4 py-2.5 rounded-md bg-signal-600 text-panel-950 text-sm font-semibold
+                  hover:bg-signal-500 transition-colors switch-control">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+            </svg>
+            New User
+        </a>
+    </div>
+
+    {# Readout row — instrument-cluster stats, not stat cards #}
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-px bg-panel-800 rounded-md overflow-hidden border border-panel-800">
+        <div class="bg-panel-900 p-5 space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="silk text-panel-100">Personnel</span>
+                <svg class="w-4 h-4 text-panel-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0
+                             004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113
+                             -.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624
+                             21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0
+                             0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0
+                             016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/>
+                </svg>
+            </div>
+            <p class="readout text-3xl font-semibold text-panel-50">{{ "%03d"|format(user_count) }}</p>
+            <p class="text-xs text-panel-400">Registered users</p>
+        </div>
+
+        <div class="bg-panel-900 p-5 space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="silk text-panel-100">System</span>
+                <span class="led w-2 h-2 is-on text-granted-400"></span>
+            </div>
+            <p class="readout text-3xl font-semibold text-granted-400">ONLINE</p>
+            <p class="text-xs text-panel-400">All services operational</p>
+        </div>
+
+        <div class="bg-panel-900 p-5 space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="silk text-panel-100">Events · 24H</span>
+                <svg class="w-4 h-4 text-panel-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <p class="readout text-3xl font-semibold text-panel-50">{{ "%03d"|format(events_24h) }}</p>
+            <p class="text-xs text-panel-400">Latest access events</p>
+        </div>
+    </div>
+
+    {# Recent Activity — the step-row timeline #}
+    <div class="rounded-md border border-panel-800 bg-panel-900/50">
+        <div class="px-5 py-4 border-b border-panel-800 flex items-center justify-between">
+            <h2 class="silk text-panel-100">Recent Activity</h2>
+            <a href="{{ url_for('admin_logs') }}" class="text-xs text-signal-400 hover:text-signal-300 transition-colors">
+                View all &rarr;
+            </a>
+        </div>
+        <div class="divide-y divide-panel-800/70" id="log-feed">
+            {% if recent_logs %}
+                {% for log in recent_logs %}
+                <div class="px-5 py-3 flex items-center gap-4">
+                    <span class="led w-1.5 h-1.5 flex-shrink-0 is-on
+                        {% if log.event_type == 'login' %}text-granted-400
+                        {% elif log.event_type == 'access_denied' %}text-denied-400
+                        {% elif log.event_type == 'logout' %}text-panel-400
+                        {% else %}text-signal-400{% endif %}"></span>
+
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm text-panel-300">{{ log.detail or log.event_type | replace('_', ' ') | title }}</p>
+                        <p class="text-xs text-panel-400 font-mono mt-0.5">{{ log.ip_address or 'N/A' }}</p>
+                    </div>
+
+                    <span class="readout text-xs text-panel-400 flex-shrink-0">
+                        {{ log.timestamp.strftime('%H:%M:%S') }}
+                    </span>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="px-5 py-12 text-center text-sm text-panel-400">
+                    No activity recorded yet.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

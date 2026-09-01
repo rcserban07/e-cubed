@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}403 Forbidden{% endblock %}
+{% block content %}
+<div class="min-h-[60vh] bg-grid flex items-center justify-center px-6">
+    <div class="text-center space-y-4">
+        <div class="inline-flex items-center gap-2 justify-center mb-2">
+            <span class="led w-1.5 h-1.5 is-on text-denied-400"></span>
+            <span class="silk text-denied-400">Access Denied</span>
+        </div>
+        <p class="readout text-6xl font-bold text-panel-700">403</p>
+        <p class="text-lg text-panel-400">You don't have clearance for this panel.</p>
+        <a href="{{ url_for('index') }}" class="inline-flex items-center gap-2 text-sm text-signal-400 hover:text-signal-300 transition-colors">
+            &larr; Return home
+        </a>
+    </div>
+</div>
+{% endblock %}

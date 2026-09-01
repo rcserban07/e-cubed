@@ -1,0 +1,78 @@
+{% extends "app_base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block page_content %}
+<div class="px-4 lg:px-8 py-6 lg:py-8 space-y-8">
+
+    {# Header #}
+    <div>
+        <h1 class="text-2xl font-bold text-panel-50">Welcome, {{ current_user.name.split(' ')[0] }}</h1>
+        <p class="text-sm text-panel-400 mt-1">Your personal access overview.</p>
+    </div>
+
+    {# Readout row #}
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-px bg-panel-800 rounded-md overflow-hidden border border-panel-800">
+        <div class="bg-panel-900 p-5 space-y-3">
+            <span class="silk text-panel-100">Account</span>
+            <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-panel-400">Username</span>
+                    <span class="text-sm font-mono text-panel-100">{{ current_user.username }}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-panel-400">Email</span>
+                    <span class="text-sm text-panel-100">{{ current_user.email }}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-panel-400">Role</span>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded silk
+                                 bg-panel-800 text-panel-400 border border-panel-700">
+                        {{ current_user.role }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-panel-900 p-5 space-y-3">
+            <span class="silk text-panel-100">Status</span>
+            <div class="flex items-center gap-3">
+                <span class="led w-2.5 h-2.5 is-on text-granted-400"></span>
+                <span class="readout text-lg font-semibold text-granted-400">ACTIVE</span>
+            </div>
+            <p class="text-xs text-panel-400">
+                Account created {{ current_user.created_at.strftime('%B %d, %Y') }}
+            </p>
+        </div>
+    </div>
+
+    {# Recent Activity #}
+    <div class="rounded-md border border-panel-800 bg-panel-900/50">
+        <div class="px-5 py-4 border-b border-panel-800">
+            <h2 class="silk text-panel-100">Your Recent Activity</h2>
+        </div>
+        <div class="divide-y divide-panel-800/70">
+            {% if my_logs %}
+                {% for log in my_logs %}
+                <div class="px-5 py-3 flex items-center gap-4">
+                    <span class="led w-1.5 h-1.5 flex-shrink-0 is-on
+                        {% if log.event_type == 'login' %}text-granted-400
+                        {% elif log.event_type == 'logout' %}text-panel-400
+                        {% else %}text-signal-400{% endif %}"></span>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm text-panel-300">{{ log.detail or log.event_type | replace('_', ' ') | title }}</p>
+                    </div>
+                    <span class="readout text-xs text-panel-400 flex-shrink-0">
+                        {{ log.timestamp.strftime('%Y-%m-%d %H:%M') }}
+                    </span>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="px-5 py-12 text-center text-sm text-panel-400">
+                    No activity recorded yet.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

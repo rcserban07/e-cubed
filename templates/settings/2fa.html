@@ -1,0 +1,75 @@
+{% extends "app_base.html" %}
+{% block title %}Two-Factor Authentication{% endblock %}
+
+{% block page_content %}
+<div class="px-4 lg:px-8 py-6 lg:py-8 max-w-lg space-y-6">
+
+    {# Header #}
+    <div>
+        <h1 class="text-2xl font-bold text-panel-50">Two-Factor Authentication</h1>
+        <p class="text-sm text-panel-400 mt-1">Add an extra layer of security to your account.</p>
+    </div>
+
+    {# Status card #}
+    <div class="rounded-md border bg-panel-900/50 p-5 space-y-4
+        {% if current_user.totp_enabled %}border-granted-500/25{% else %}border-panel-800{% endif %}">
+
+        <div class="flex items-center gap-4">
+            <div class="w-10 h-10 rounded-md flex items-center justify-center
+                {% if current_user.totp_enabled %}bg-granted-500/10 text-granted-400{% else %}bg-panel-800 text-panel-400{% endif %}">
+                {% if current_user.totp_enabled %}
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                {% else %}
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+                </svg>
+                {% endif %}
+            </div>
+            <div>
+                <p class="text-sm font-medium {% if current_user.totp_enabled %}text-granted-400{% else %}text-panel-400{% endif %}">
+                    {% if current_user.totp_enabled %}2FA is enabled{% else %}2FA is not enabled{% endif %}
+                </p>
+                <p class="text-xs text-panel-400 mt-0.5">
+                    {% if current_user.totp_enabled %}
+                        Your account is protected with an authenticator app.
+                    {% else %}
+                        Enable 2FA to require a verification code on every login.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        {% if current_user.totp_enabled %}
+        <form method="POST" action="{{ url_for('disable_2fa') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit"
+                    class="w-full py-2.5 rounded-md border border-denied-600/40 text-denied-400 text-sm
+                           hover:bg-denied-500/10 transition-colors"
+                    onclick="return confirm('Are you sure? You will need to set up 2FA again.')">
+                Disable 2FA
+            </button>
+        </form>
+        {% else %}
+        <a href="{{ url_for('setup_2fa') }}"
+           class="block w-full py-2.5 rounded-md bg-signal-600 text-panel-950 text-sm font-semibold text-center
+                  hover:bg-signal-500 transition-colors switch-control">
+            Set Up 2FA
+        </a>
+        {% endif %}
+    </div>
+
+    {# How it works #}
+    <div class="rounded-md border border-panel-800 bg-panel-900/50 p-5 space-y-3">
+        <p class="silk text-panel-100">How it works</p>
+        <div class="space-y-2 text-sm text-panel-400">
+            <p>1. Install an authenticator app (Google Authenticator, Microsoft Authenticator, Authy)</p>
+            <p>2. Scan the QR code we provide with your app</p>
+            <p>3. Enter the 6-digit code to verify setup</p>
+            <p>4. On each login, you'll enter your password + a fresh 6-digit code</p>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

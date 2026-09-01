@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}E-Cubed{% endblock %} — E-Cubed Security</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Public Sans', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        panel: {
+                            50:  '#f7f5f2',
+                            100: '#ece7e1',
+                            200: '#d6cec6',
+                            300: '#b8ada3',
+                            400: '#948a81',
+                            500: '#6f665f',
+                            600: '#544c46',
+                            700: '#3d3733',
+                            800: '#2b2724',
+                            850: '#221f1d',
+                            900: '#1b1a18',
+                            950: '#141312',
+                        },
+                        signal: {
+                            300: '#ffcf8a',
+                            400: '#ffb454',
+                            500: '#f7952a',
+                            600: '#dd7a12',
+                            700: '#b8620d',
+                        },
+                        granted: {
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                        },
+                        denied: {
+                            400: '#f87171',
+                            500: '#ef4444',
+                            600: '#dc2626',
+                        },
+                    },
+                    boxShadow: {
+                        panel: '0 12px 32px -12px rgba(0,0,0,0.55), 0 2px 6px -2px rgba(0,0,0,0.4)',
+                        control: '0 2px 8px -2px rgba(0,0,0,0.5)',
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Scrollbar styling */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #141312; }
+        ::-webkit-scrollbar-thumb { background: #3d3733; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #544c46; }
+
+        /* Text selection theming */
+        ::selection { background: rgba(255,180,84,0.28); color: #fff; }
+
+        /* Focus ring theming */
+        :focus-visible { outline: 2px solid #f7952a; outline-offset: 2px; }
+
+        /* Blueprint-grade schematic grid, not decoration-grade */
+        .bg-grid {
+            background-image:
+                linear-gradient(rgba(255, 180, 84, 0.035) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 180, 84, 0.035) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+
+        /* Indicator LED — a real, restrained offset+blur bloom on "on" states,
+           not a zero-offset decorative halo. */
+        .led {
+            display: inline-block;
+            border-radius: 9999px;
+            background: #544c46;
+        }
+        .led.is-on {
+            background: currentColor;
+            box-shadow: 0 1px 3px 0 currentColor;
+        }
+
+        /* Corner rivet: a two-tone highlight for dimensionality, not a flat dot */
+        .rivet {
+            background: radial-gradient(circle at 35% 30%, #6f665f, #221f1d 70%);
+            box-shadow: 0 1px 1px rgba(0,0,0,0.6);
+        }
+
+        /* Right-edge fade cueing a horizontally scrollable region */
+        .scroll-fade {
+            position: relative;
+        }
+        .scroll-fade::after {
+            content: '';
+            position: absolute;
+            top: 0; right: 0; bottom: 0;
+            width: 28px;
+            background: linear-gradient(90deg, transparent, #1b1a18);
+            pointer-events: none;
+        }
+
+        /* Live-sweep: a scanning highlight crossing a readout, standing in for
+           the incumbent's pulse-dot as the app's one persistent "system is
+           live" signature, not a decorative glow. */
+        .sweep { position: relative; overflow: hidden; }
+        .sweep::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,180,84,0.4), transparent);
+            transform: translateX(-100%);
+            animation: sweep-move 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+        @keyframes sweep-move {
+            0%   { transform: translateX(-100%); }
+            60%  { transform: translateX(100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Segmented readout — the panel's numeric-counter voice */
+        .readout {
+            font-family: 'JetBrains Mono', monospace;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 0.02em;
+        }
+
+        /* Silkscreen panel label */
+        .silk {
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        /* Flash message entrance */
+        @keyframes flash-in {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .flash-msg { animation: flash-in 0.3s ease-out; }
+
+        /* Panel switch: a real physical control, not a flat rounded button.
+           A "shelf" shadow gives it standoff height; pressing collapses it. */
+        .switch-control {
+            border-radius: 4px;
+            box-shadow: 0 3px 0 0 rgba(0,0,0,0.4), inset 0 1px 0 0 rgba(255,255,255,0.18);
+            transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.15s ease;
+        }
+        .switch-control:active {
+            transform: translateY(3px);
+            box-shadow: 0 0 0 0 rgba(0,0,0,0.4), inset 0 2px 5px 0 rgba(0,0,0,0.35);
+        }
+
+        /* Page content entrance — one authored moment, not per-section */
+        @keyframes power-on {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .power-on { animation: power-on 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body class="h-full bg-panel-950 text-panel-200 font-sans antialiased">
+
+    {% block content %}{% endblock %}
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

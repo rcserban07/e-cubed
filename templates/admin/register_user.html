@@ -1,0 +1,76 @@
+{% extends "app_base.html" %}
+{% block title %}Register User{% endblock %}
+
+{% block page_content %}
+<div class="px-4 lg:px-8 py-6 lg:py-8 max-w-lg">
+
+    {# Back link #}
+    <a href="{{ url_for('admin_users') }}" class="inline-flex items-center gap-2 text-sm text-panel-400 hover:text-panel-300 transition-colors mb-6">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+        </svg>
+        Back to Personnel
+    </a>
+
+    {# Header #}
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-panel-50">Register User</h1>
+        <p class="text-sm text-panel-400 mt-1">Add a new employee or administrator to the system.</p>
+    </div>
+
+    {# Form #}
+    <form method="POST" class="space-y-5">
+        {{ form.hidden_tag() }}
+
+        {% macro field(f, type="text", placeholder="") %}
+        <div class="space-y-1.5">
+            <label for="{{ f.id }}" class="silk block text-panel-100">
+                {{ f.label.text }}
+            </label>
+            {{ f(
+                class="w-full px-4 py-3 rounded-md bg-panel-900 border border-panel-700
+                       text-panel-100 text-sm placeholder-panel-400
+                       focus:outline-none focus:border-signal-600/60 focus:ring-1 focus:ring-signal-600/30
+                       transition-colors",
+                placeholder=placeholder
+            ) }}
+            {% for error in f.errors %}
+            <p class="text-xs text-denied-400">{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endmacro %}
+
+        {{ field(form.username, placeholder="e.g. jdoe") }}
+        {{ field(form.name, placeholder="e.g. Jane Doe") }}
+        {{ field(form.email, placeholder="e.g. jane@company.com") }}
+        {{ field(form.phone, placeholder="e.g. +1 613 555 0100") }}
+
+        {# Role select #}
+        <div class="space-y-1.5">
+            <label for="role" class="silk block text-panel-100">Role</label>
+            {{ form.role(
+                class="w-full px-4 py-3 rounded-md bg-panel-900 border border-panel-700
+                       text-panel-100 text-sm
+                       focus:outline-none focus:border-signal-600/60 focus:ring-1 focus:ring-signal-600/30
+                       transition-colors appearance-none cursor-pointer"
+            ) }}
+        </div>
+
+        {{ field(form.password, placeholder="Minimum 6 characters") }}
+        {{ field(form.confirm_password, placeholder="Re-enter password") }}
+
+        <div class="pt-2 flex items-center gap-3">
+            <button type="submit"
+                    class="px-6 py-3 rounded-md bg-signal-600 text-panel-950 font-semibold text-sm
+                           hover:bg-signal-500 transition-colors switch-control">
+                Register
+            </button>
+            <a href="{{ url_for('admin_users') }}"
+               class="px-6 py-3 rounded-md border border-panel-700 text-panel-400 text-sm
+                      hover:text-panel-100 hover:border-panel-600 transition-colors">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

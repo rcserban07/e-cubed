@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}404 Not Found{% endblock %}
+{% block content %}
+<div class="min-h-[60vh] bg-grid flex items-center justify-center px-6">
+    <div class="text-center space-y-4">
+        <div class="inline-flex items-center gap-2 justify-center mb-2">
+            <span class="led w-1.5 h-1.5"></span>
+            <span class="silk text-panel-100">Not Found</span>
+        </div>
+        <p class="readout text-6xl font-bold text-panel-700">404</p>
+        <p class="text-lg text-panel-400">This panel doesn't exist.</p>
+        <a href="{{ url_for('index') }}" class="inline-flex items-center gap-2 text-sm text-signal-400 hover:text-signal-300 transition-colors">
+            &larr; Return home
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Verify Identity{% endblock %}
+
+{% block content %}
+{# Flash messages #}
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="fixed top-4 right-4 z-50 space-y-2 max-w-sm">
+    {% for category, message in messages %}
+    <div class="flash-msg flex items-center gap-3 px-4 py-3 rounded-md border text-sm backdrop-blur-sm
+        {% if category == 'success' %}bg-granted-500/10 border-granted-500/25 text-granted-400
+        {% elif category == 'error' %}bg-denied-500/10 border-denied-500/25 text-denied-400
+        {% else %}bg-panel-800 border-panel-700 text-panel-300{% endif %}">
+        <span class="led w-1.5 h-1.5 is-on flex-shrink-0"></span>
+        <span>{{ message }}</span>
+        <button onclick="this.parentElement.remove()" class="ml-auto opacity-60 hover:opacity-100">&times;</button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+<div class="min-h-screen bg-grid flex items-center justify-center px-6 py-12">
+    <div class="w-full max-w-sm">
+
+        {# Back #}
+        <a href="{{ url_for('login') }}" class="inline-flex items-center gap-2 text-sm text-panel-400 hover:text-panel-300 transition-colors mb-6">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+            </svg>
+            Back to login
+        </a>
+
+        <div class="relative rounded-lg border border-panel-800 bg-panel-900/70 shadow-panel">
+            <span class="rivet absolute top-3 left-3 w-1.5 h-1.5 rounded-full"></span>
+            <span class="rivet absolute top-3 right-3 w-1.5 h-1.5 rounded-full"></span>
+            <span class="rivet absolute bottom-3 left-3 w-1.5 h-1.5 rounded-full"></span>
+            <span class="rivet absolute bottom-3 right-3 w-1.5 h-1.5 rounded-full"></span>
+
+            {# Diagnostics strip #}
+            <div class="border-b border-panel-800 px-8 py-3 flex items-center justify-center gap-2">
+                <span class="led w-1.5 h-1.5 is-on text-signal-400"></span>
+                <span class="silk text-panel-100">Second Factor Required</span>
+            </div>
+
+            <div class="px-8 py-10">
+                {# Header #}
+                <div class="space-y-2 mb-8">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-md bg-panel-850 border border-signal-700/40 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-signal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6
+                                         11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623
+                                         5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152
+                                         c-3.196 0-6.1-1.248-8.25-3.285z"/>
+                            </svg>
+                        </div>
+                        <h1 class="text-2xl font-bold text-panel-50">Two-Factor Auth</h1>
+                    </div>
+                    <p class="text-sm text-panel-400">
+                        Enter the 6-digit code from your authenticator app for
+                        <span class="text-panel-300 font-mono">@{{ username }}</span>.
+                    </p>
+                </div>
+
+                {# Form #}
+                <form method="POST" class="space-y-5">
+                    {{ form.hidden_tag() }}
+
+                    <div class="space-y-1.5">
+                        <label for="token" class="silk block text-panel-100">Verification Code</label>
+                        {{ form.token(
+                            class="readout w-full px-4 py-4 rounded-md bg-panel-950 border border-panel-700
+                                   text-panel-50 text-center text-2xl tracking-[0.5em] placeholder-panel-400
+                                   focus:outline-none focus:border-signal-600/60 focus:ring-1 focus:ring-signal-600/30
+                                   transition-colors",
+                            placeholder="000000",
+                            autocomplete="one-time-code",
+                            inputmode="numeric",
+                            maxlength="6",
+                            autofocus=True
+                        ) }}
+                        {% for error in form.token.errors %}
+                        <p class="text-xs text-denied-400">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+
+                    <button type="submit"
+                            class="w-full py-3.5 rounded-md bg-signal-600 text-panel-950 font-semibold text-sm
+                                   hover:bg-signal-500 transition-colors switch-control">
+                        Verify
+                    </button>
+                </form>
+
+                <p class="text-xs text-panel-400 text-center mt-6">
+                    Lost your authenticator? Contact your administrator to reset 2FA.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
